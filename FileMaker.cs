@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -230,7 +230,7 @@ namespace AS_Utility
             bool isDone = false;
             string fileContent = File.ReadAllText(filePath);
 
-            while (isDone == false)
+            while (!isDone)
             {
                 if (fileContent.Contains(";;"))
                 {
