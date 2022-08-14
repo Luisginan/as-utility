@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -67,7 +67,7 @@ namespace AS_Utility
                 sw.WriteLine(value);
             }
 
-            Console.WriteLine($"Release Note has created");
+            Console.WriteLine("Release Note has created");
         }
 
         public void CopyFile(FileInfo from, FileInfo to)
