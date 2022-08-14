@@ -7,7 +7,7 @@ namespace AS_Utility
 {
     public class StyleUtil
     {
-        public void WriteTitle(String title)
+        public void WriteTitle(string title)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("==============================================");

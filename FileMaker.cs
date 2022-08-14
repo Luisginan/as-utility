@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.IO;
 using System.IO.Compression;
 using System.Xml.Serialization;
-using System.Diagnostics;
 
 namespace AS_Utility
 {
@@ -48,13 +45,13 @@ namespace AS_Utility
             // get list of all files in the directory and clear 
             // the Read-Only flag
 
-            foreach (FileInfo file in dInfo.GetFiles())
+            foreach (var file in dInfo.GetFiles())
             {
                 file.Attributes = FileAttributes.Normal;
             }
 
             // recurse all of the subdirectories
-            foreach (DirectoryInfo subDir in dInfo.GetDirectories())
+            foreach (var subDir in dInfo.GetDirectories())
             {
                 UpdateFileAttributes(subDir);
             }
@@ -62,17 +59,17 @@ namespace AS_Utility
 
         public void CreateFileText(DirectoryInfo folder, string value)
         {
-            using (StreamWriter sw = File.CreateText(folder.FullName + @"\Release Note.txt"))
+            using (var sw = File.CreateText(folder.FullName + @"\Release Note.txt"))
             {
                 sw.WriteLine(value);
             }
 
-            Console.WriteLine("Release Note has created");
+            Console.WriteLine($"Release Note has created");
         }
 
         public void CopyFile(FileInfo from, FileInfo to)
         {
-            if (!to.Directory.Exists)
+            if (to.Directory is {Exists: false})
             {
                 Directory.CreateDirectory(to.Directory.FullName);
             }
@@ -86,7 +83,7 @@ namespace AS_Utility
             File.Copy(from.FullName, to.FullName, true);
         }
 
-        public void SetAttributeFile(FileInfo file, FileAttributes attributes = FileAttributes.Normal, bool errorIfNotExist = true)
+        public static void SetAttributeFile(FileInfo file, FileAttributes attributes = FileAttributes.Normal, bool errorIfNotExist = true)
         {
             if (File.Exists(file.FullName))
             {
@@ -100,7 +97,7 @@ namespace AS_Utility
                 }
             }
         }
-        public void DeleteFile(FileInfo file, bool errorIfNotExist)
+        public static void DeleteFile(FileInfo file, bool errorIfNotExist)
         {
             if (File.Exists(file.FullName))
             {
@@ -116,41 +113,22 @@ namespace AS_Utility
             }
         }
 
-        public void CreateFolder(DirectoryInfo path)
-        {
-            path.Create();
-            Console.WriteLine($"{path.Name} has created");
-        }
-
-        public void CreateZip(DirectoryInfo folderToZip, FileInfo destFilezip)
-        {
-            if (destFilezip.Exists)
-            {
-                destFilezip.Delete();
-            }
-            ZipFile.CreateFromDirectory(folderToZip.FullName, destFilezip.FullName);
-            Console.WriteLine($"{destFilezip.FullName} was created");
-        }
-
-        public void ExtractZip(DirectoryInfo folderExtract, FileInfo filezip)
+        public void ExtractZip(DirectoryInfo folderExtract, FileInfo fileZip)
         {
             DeleteFolder(folderExtract);
-            ZipFile.ExtractToDirectory(filezip.FullName, folderExtract.FullName);
+            ZipFile.ExtractToDirectory(fileZip.FullName, folderExtract.FullName);
         }
 
-        public T ReadConfig<T>(string path)
+        public static T ReadConfig<T>(string path)
         {
-            T config;
             var serializer = new XmlSerializer(typeof(T));
-            using (var stream = new StreamReader(path))
-            {
-                config = (T)serializer.Deserialize(stream);
-            }
-           
+            using var stream = new StreamReader(path);
+            var config = (T)serializer.Deserialize(stream);
+
             return config;
         }
 
-        public void WriteConfig<T>(T config, string path)
+        public static void WriteConfig<T>(T config, string path)
         {
             var serializer = new XmlSerializer(typeof(T));
             using (var stream = new StreamWriter(path))
@@ -161,101 +139,31 @@ namespace AS_Utility
             Console.WriteLine($"{path} Created ");
         }
 
-        public bool Exists(FileInfo fileInfo)
+        public static bool Exists(FileInfo fileInfo)
         {
             return fileInfo.Exists;
         }
 
-        public List<FileInfo> GetFiles(DirectoryInfo path)
+        public static string ReadFromFile(string filePath)
         {
-            return path.GetFiles().ToList();
-        }
-
-        public List<FileInfo> GetFiles(DirectoryInfo path, string searchPattern)
-        {
-            return path.GetFiles(searchPattern).ToList();
-        }
-
-        public List<DirectoryInfo> GetFolders(DirectoryInfo path)
-        {
-            return path.GetDirectories().Where(x => x.Name.Contains(" - Prev ")).ToList().OrderBy(x => int.Parse(x.Name.Split(" - Prev ")[1])).ToList();
-        }
-
-        public List<DirectoryInfo> GetFolders2(DirectoryInfo path)
-        {
-            return path.GetDirectories().ToList().OrderBy(x => int.Parse(x.Name.Split('.')[0])).ToList();
-        }
-
-        public void RunFile(String path, String argument = "", bool waitExit = true)
-        {
-            var process = Process.Start(path, argument);
-            if (waitExit)
-            {
-                process.WaitForExit();
-            }
-
-            process.ErrorDataReceived += Process_ErrorDataReceived;
-        }
-
-        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            throw new Exception(e.Data);
-        }
-
-        public string ReadFromFile(string filePath)
-        {
-            var result = File.ReadAllText(filePath); ;
+            var result = File.ReadAllText(filePath); 
             return result;
         }
 
-        public void WriteToFile(string filePath, string value)
+        public static void WriteToFile(string filePath, string value)
         {
             File.WriteAllText(filePath, value);
         }
 
-        public void CopyFolder(string SourcePath, string DestinationPath)
+        public void CopyFolder(string sourcePath, string destinationPath)
         {
-            if (Directory.Exists(DestinationPath))
+            if (Directory.Exists(destinationPath))
             {
-                DeleteFolder(new DirectoryInfo(DestinationPath));
+                DeleteFolder(new DirectoryInfo(destinationPath));
             }
-            foreach (string dirPath in Directory.GetDirectories(SourcePath, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(dirPath.Replace(SourcePath, DestinationPath));
+            foreach (var dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories)) Directory.CreateDirectory(dirPath.Replace(sourcePath, destinationPath));
             //Copy all the files & Replaces any files with the same name
-            foreach (string newPath in Directory.GetFiles(SourcePath, ".", SearchOption.AllDirectories)) File.Copy(newPath, newPath.Replace(SourcePath, DestinationPath), true);
-        }
-
-        public string EditFileCSV(string filePath)
-        {
-            string tempPath = @"tempFile.csv";
-            bool isDone = false;
-            string fileContent = File.ReadAllText(filePath);
-
-            while (!isDone)
-            {
-                if (fileContent.Contains(";;"))
-                {
-                    fileContent = fileContent.Replace(";;", "; ;");
-                }
-                else
-                {
-                    isDone = true;
-                }
-            }
-
-            File.WriteAllText(tempPath, fileContent);
-
-            return tempPath;
-        }
-
-        public void CreateFileMerge(DirectoryInfo path, List<string> merge)
-        {
-            using (StreamWriter writer = File.CreateText($"{ path }" + @"\setup.txt"))
-            {
-                foreach (var v in merge)
-                {
-                    writer.WriteLine(v);
-                }
-            }
+            foreach (var newPath in Directory.GetFiles(sourcePath, ".", SearchOption.AllDirectories)) File.Copy(newPath, newPath.Replace(sourcePath, destinationPath), true);
         }
     }
 }
