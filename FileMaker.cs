@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace AS_Utility
 {
-    public class NgFileMaker
+    public class NgFileMaker : IFileMaker
     {
         public void RenameFolder(string originPath, string destinationPath)
         {
@@ -49,8 +49,7 @@ namespace AS_Utility
             {
                 file.Attributes = FileAttributes.Normal;
             }
-
-            // recurse all of the subdirectories
+            
             foreach (var subDir in dInfo.GetDirectories())
             {
                 UpdateFileAttributes(subDir);
@@ -83,7 +82,7 @@ namespace AS_Utility
             File.Copy(from.FullName, to.FullName, true);
         }
 
-        public static void SetAttributeFile(FileInfo file, FileAttributes attributes = FileAttributes.Normal, bool errorIfNotExist = true)
+        public  void SetAttributeFile(FileInfo file, FileAttributes attributes = FileAttributes.Normal, bool errorIfNotExist = true)
         {
             if (File.Exists(file.FullName))
             {
@@ -97,7 +96,7 @@ namespace AS_Utility
                 }
             }
         }
-        public static void DeleteFile(FileInfo file, bool errorIfNotExist)
+        public void DeleteFile(FileInfo file, bool errorIfNotExist)
         {
             if (File.Exists(file.FullName))
             {
@@ -119,7 +118,7 @@ namespace AS_Utility
             ZipFile.ExtractToDirectory(fileZip.FullName, folderExtract.FullName);
         }
 
-        public static T ReadConfig<T>(string path)
+        public T ReadConfig<T>(string path)
         {
             var serializer = new XmlSerializer(typeof(T));
             using var stream = new StreamReader(path);
@@ -128,7 +127,7 @@ namespace AS_Utility
             return config;
         }
 
-        public static void WriteConfig<T>(T config, string path)
+        public void WriteConfig<T>(T config, string path)
         {
             var serializer = new XmlSerializer(typeof(T));
             using (var stream = new StreamWriter(path))
@@ -139,18 +138,18 @@ namespace AS_Utility
             Console.WriteLine($"{path} Created ");
         }
 
-        public static bool Exists(FileInfo fileInfo)
+        public bool Exists(FileInfo fileInfo)
         {
             return fileInfo.Exists;
         }
 
-        public static string ReadFromFile(string filePath)
+        public string ReadFromFile(string filePath)
         {
             var result = File.ReadAllText(filePath); 
             return result;
         }
 
-        public static void WriteToFile(string filePath, string value)
+        public void WriteToFile(string filePath, string value)
         {
             File.WriteAllText(filePath, value);
         }
